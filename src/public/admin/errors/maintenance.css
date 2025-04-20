@@ -1,0 +1,30 @@
+.maintenance-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .maintenance-item {
+    background: white;
+    border-left: 4px solid #3498db;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .maintenance-item.critical {
+    border-left-color: #e74c3c;
+  }
+  
+  .maintenance-meta {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin: 5px 0;
+  }
+  
+  .maintenance-countdown {
+    font-weight: bold;
+    color: #2c3e50;
+  }

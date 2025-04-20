@@ -1,0 +1,145 @@
+:root {
+  --primary: #434445;
+  --primary-hover: #7a8389;
+  --error: #e74c3c;
+  --text: #2d3748;
+  --text-light: #3a3b3c;
+  --bg: rgba(255, 255, 255, 0.97);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --border-color: #e2e8f0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+              url('/images/panelback.png') center/cover no-repeat fixed;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 340px;
+  background: var(--bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.logo {
+  padding: 30px 20px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.logo img {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+}
+
+.login-form, #resetPasswordForm {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: var(--input-bg);
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+#forgotPassword {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.language-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.language-btn {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.language-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.language-btn:active:not(.active) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.language-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 20px;
+}
+
+.login-btn:hover {
+  background: var(--primary-hover);
+}
+
+#resetPasswordForm {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    width: 95%;
+  }
+}

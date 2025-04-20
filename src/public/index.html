@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN SOFTWARE</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <meta name="csrf-token" content="{{csrfToken}}">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">
+      <img src="./images/Odinsoftpng.png" alt="ODIN SOFTWARE Logo">
+    </div>
+    
+    <form id="loginForm" class="login-form">
+      <div class="form-group">
+        <input type="text" id="username" placeholder="Username" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="password" placeholder="Password" required>
+        <div class="form-footer">
+          <a href="#" id="forgotPassword">Forgot password?</a>
+          <div class="language-selector">
+            <button type="button" class="language-btn active" data-lang="en">🇬🇧 EN</button>
+            <button type="button" class="language-btn" data-lang="tr">🇹🇷 TR</button>
+            <button type="button" class="language-btn" data-lang="fr">🇫🇷 FR</button>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+    
+    <form id="resetPasswordForm">
+      <div class="form-group">
+        <input type="email" id="resetEmail" placeholder="Your email" required>
+      </div>
+      <button type="submit" class="login-btn">Send Reset Link</button>
+      <div class="form-footer">
+        <a href="#" id="backToLogin">Back to login</a>
+      </div>
+    </form>
+  </div>
+
+  <div id="toastContainer"></div>
+  <script src="./js/script.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const response = await fetch('/api/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ username, password }),
+  credentials: 'include', // Keep this
+  mode: 'cors' // Add this
+});
+
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Store minimal user data in localStorage
+      localStorage.setItem('admin-panel-user', JSON.stringify({
+        username: data.user.username,
+        token: data.token
+      }));
+      
+      // Redirect to panel
+      window.location.href = '/panel';
+    } else {
+      const error = await response.json();
+      alert(error.error || 'Login failed');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    alert('Network error. Please try again.');
+  }
+});
+    </script>    
+</body>
+</html>

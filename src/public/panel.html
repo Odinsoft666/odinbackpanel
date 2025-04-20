@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODINSOFT Admin Panel</title>
+  <meta name="description" content="ODINSOFT Administration Dashboard">
+  <link rel="stylesheet" href="./css/panel.css" preload>
+  <meta name="csrf-token" content="{{csrfToken}}">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <style>
+    /* Critical CSS for initial render */
+    .admin-container {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.5rem;
+      height: 60px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .admin-main {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      height: calc(100vh - 60px);
+    }
+    .admin-content {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #505254;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 2rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header" role="banner">
+      <div class="header-left">
+        <div class="panel-logo-container">
+          <img src="./images/Odinsoftpng.png" alt="ODINSOFT Logo" 
+               width="200" height="40" loading="eager" class="panel-logo">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" hidden>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h18M3 6h18M3 18h18"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="language-selector-horizontal" role="button" aria-haspopup="true" aria-expanded="false" tabindex="0">
+        <div class="language-main-option active" data-lang="en" title="English">
+          <span class="language-flag">🇬🇧</span>
+        </div>
+        <div class="language-options-container" role="menu">
+          <div class="language-option" data-lang="en" title="English" role="menuitem" tabindex="-1">
+            <span class="language-flag">🇬🇧</span>
+          </div>
+          <div class="language-option" data-lang="tr" title="Turkish" role="menuitem" tabindex="-1">
+            <span class="language-flag">🇹🇷</span>
+          </div>
+          <div class="language-option" data-lang="fr" title="French" role="menuitem" tabindex="-1">
+            <span class="language-flag">🇫🇷</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="search-container">
+          <label for="playerSearch" class="sr-only">Search players</label>
+          <input type="text" id="playerSearch" placeholder="Search players..." 
+                 aria-label="Search players">
+          <button id="searchButton" aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
+                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="admin-profile" role="button" aria-haspopup="true" 
+             aria-expanded="false" aria-label="User menu">
+          <span class="admin-name">ODINSOFT / ADMIN</span>
+          <div class="profile-dropdown">
+            <div class="dropdown-item" data-action="settings" role="menuitem" tabindex="-1">Account Settings</div>
+            <div class="dropdown-item" data-action="reset-password" role="menuitem" tabindex="-1">Reset Password</div>
+            <div class="dropdown-item" data-action="logout" role="menuitem" tabindex="-1">Log Out</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-main">
+      <nav class="admin-sidebar" aria-label="Main navigation">
+        <ul class="nav-menu" role="menu">
+          <li class="nav-item active" data-section="dashboard" role="menuitem" 
+              tabindex="0" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">🏠</span>
+            <span class="nav-text">Home</span>
+          </li>
+          
+          <li class="nav-item has-submenu" data-section="players" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">👥</span>
+            <span class="nav-text">Players</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="all-players" role="menuitem" tabindex="-1">All List</li>
+              <li data-action="add-player" role="menuitem" tabindex="-1">Add Player</li>
+              <li data-action="export-players" role="menuitem" tabindex="-1">Excel</li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-submenu" data-section="balance" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">💰</span>
+            <span class="nav-text">Balance</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="pending-coupons" role="menuitem" tabindex="-1">Player Waiting Sports Coupons</li>
+              <li data-action="balance-transactions" role="menuitem" tabindex="-1">Player Balance Transactions</li>
+              <li data-action="bonus-transactions" role="menuitem" tabindex="-1">Bonus Balance Transactions</li>
+              <li data-action="affiliate-transactions" role="menuitem" tabindex="-1">Affiliate Balance Transactions</li>
+              <li data-action="tombola-transactions" role="menuitem" tabindex="-1">Tombola Balance Transactions</li>
+              <li data-action="wheel-transactions" role="menuitem" tabindex="-1">Hot Wheel Balance Transactions</li>
+              <li data-action="boxgame-transactions" role="menuitem" tabindex="-1">Box Game Balance Transactions</li>
+              <li data-action="scratchwin-transactions" role="menuitem" tabindex="-1">Scratch-Win Balance Transactions</li>
+              <li data-action="manual-transactions" role="menuitem" tabindex="-1">Manual Balance Transactions</li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-submenu" data-section="finance" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">🏦</span>
+            <span class="nav-text">Finance</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="investment" role="menuitem" tabindex="-1">Investment</li>
+              <li data-action="withdrawal" role="menuitem" tabindex="-1">Withdrawal</li>
+              <li data-action="bank-notifications" role="menuitem" tabindex="-1">Bank Notifications</li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-submenu" data-section="bonuses" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">🎁</span>
+            <span class="nav-text">Bonuses</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="freespins" role="menuitem" tabindex="-1">Freespins</li>
+              
+              <li class="has-nested" role="menuitem" tabindex="-1">
+                <span>Hot wheel</span>
+                <span class="submenu-toggle" aria-hidden="true">▸</span>
+                <ul class="nested" role="menu">
+                  <li data-action="hot-wheel-settings" role="menuitem" tabindex="-1">Hot Wheel Settings</li>
+                  <li data-action="hot-wheel-bonus-settings" role="menuitem" tabindex="-1">Hot Wheel Bonus Settings</li>
+                </ul>
+              </li>
+              
+              <li class="has-nested" role="menuitem" tabindex="-1">
+                <span>Box Game</span>
+                <span class="submenu-toggle" aria-hidden="true">▸</span>
+                <ul class="nested" role="menu">
+                  <li data-action="box-game-settings" role="menuitem" tabindex="-1">Box Game Settings</li>
+                  <li data-action="box-game-bonus-settings" role="menuitem" tabindex="-1">Box Game Bonus Settings</li>
+                </ul>
+              </li>
+              
+              <li data-action="investment-bonuses" role="menuitem" tabindex="-1">Investment Bonuses</li>
+              <li data-action="cashback-bonuses" role="menuitem" tabindex="-1">Cashback Bonuses</li>
+              <li data-action="registration-bonuses" role="menuitem" tabindex="-1">Registration Bonuses</li>
+              <li data-action="freespin-bonuses" role="menuitem" tabindex="-1">Freespin Bonuses</li>
+              <li data-action="link-bonuses" role="menuitem" tabindex="-1">Link Bonuses</li>
+            </ul>
+          </li>
+
+          <li class="nav-item" data-section="css" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">🎨</span>
+            <span class="nav-text">CSS</span>
+          </li>
+
+          <li class="nav-item has-submenu" data-section="reports" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">📊</span>
+            <span class="nav-text">Reports</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="bank-investment-withdrawal-report" role="menuitem" tabindex="-1">Bank Investment and Withdrawal Report</li>
+              <li data-action="crypto-investment-withdrawal-report" role="menuitem" tabindex="-1">Crypto Investment and Withdrawal Report</li>
+              <li data-action="investment-detailed-report" role="menuitem" tabindex="-1">Investment Detailed Report</li>
+              <li data-action="investment-average-report" role="menuitem" tabindex="-1">Investment Average Report</li>
+              <li data-action="gift-report" role="menuitem" tabindex="-1">Gift Report</li>
+              <li data-action="profitability-report" role="menuitem" tabindex="-1">Profitability Report</li>
+              <li data-action="player-health-report" role="menuitem" tabindex="-1">Player Health Report</li>
+              <li data-action="player-registration-report" role="menuitem" tabindex="-1">Player Registration Report</li>
+              <li data-action="player-investment-report" role="menuitem" tabindex="-1">Player Investment Report</li>
+              <li data-action="player-profit-report" role="menuitem" tabindex="-1">Player Profit Report</li>
+              <li data-action="investment-reference-control" role="menuitem" tabindex="-1">Investment Reference Control</li>
+            </ul>
+          </li>
+
+          <li class="nav-item" data-section="services" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">🛠️</span>
+            <span class="nav-text">Services</span>
+          </li>
+
+          <li class="nav-item has-submenu" data-section="affiliate" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">🤝</span>
+            <span class="nav-text">Affiliate</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="affiliate-list" role="menuitem" tabindex="-1">Affiliate List</li>
+              <li data-action="affiliate-stats" role="menuitem" tabindex="-1">Affiliate Stats</li>
+              <li data-action="affiliate-payments" role="menuitem" tabindex="-1">Affiliate Payments</li>
+              <li data-action="adding-affiliate" role="menuitem" tabindex="-1">Adding Affiliate</li>
+              <li data-action="closing-affiliate" role="menuitem" tabindex="-1">Closing Affiliate</li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-submenu" data-section="operators" role="menuitem" tabindex="0">
+            <span class="nav-icon" aria-hidden="true">👨‍💼</span>
+            <span class="nav-text">Operators</span>
+            <span class="submenu-toggle" aria-hidden="true">▾</span>
+            <ul class="submenu" role="menu">
+              <li data-action="all-operators" role="menuitem" tabindex="-1">All List</li>
+              <li data-action="create-operators" role="menuitem" tabindex="-1">Create Operators</li>
+              <li data-action="delete-operators" role="menuitem" tabindex="-1">Edit Operators</li>
+              <li data-action="edit-operators-class" role="menuitem" tabindex="-1">Edit Operators Class</li>
+            </ul>
+          </li>
+          
+          <li class="sidebar-actions">
+            <div class="action-items-container">
+              <div class="action-item" data-action="home" title="Home" role="button" tabindex="0" aria-label="Home">
+                <span class="action-icon" aria-hidden="true">🏠</span>
+              </div>
+              <div class="action-item sound-toggle" data-action="toggle-sound" title="Sound On/Off" role="button" tabindex="0" aria-label="Toggle sound">
+                <span class="action-icon sound-icon" aria-hidden="true">🔊</span>
+              </div>
+              <div class="action-item" data-action="change-password" title="Change Password" role="button" tabindex="0" aria-label="Change password">
+                <span class="action-icon" aria-hidden="true">🔒</span>
+              </div>
+              <div class="action-item" data-action="logout" title="Log Out" role="button" tabindex="0" aria-label="Log out">
+                <span class="action-icon" aria-hidden="true">🚪</span>
+              </div>
+              <div class="language-selector-horizontal" role="button" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-label="Language selector">
+                <div class="language-main-option active" data-lang="en" title="English">
+                  <span class="language-flag" aria-hidden="true">🇬🇧</span>
+                  <span class="sr-only">English</span>
+                </div>
+                <div class="language-options-container" role="menu">
+                  <div class="language-option" data-lang="en" title="English" role="menuitem" tabindex="-1">
+                    <span class="language-flag" aria-hidden="true">🇬🇧</span>
+                    <span class="sr-only">English</span>
+                  </div>
+                  <div class="language-option" data-lang="tr" title="Türkçe" role="menuitem" tabindex="-1">
+                    <span class="language-flag" aria-hidden="true">🇹🇷</span>
+                    <span class="sr-only">Turkish</span>
+                  </div>
+                  <div class="language-option" data-lang="fr" title="Français" role="menuitem" tabindex="-1">
+                    <span class="language-flag" aria-hidden="true">🇫🇷</span>
+                    <span class="sr-only">French</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+
+      <main class="admin-content" id="main-content" role="main">
+        <div class="content-placeholder">
+          <h1 class="welcome-message">Welcome to Admin Panel</h1>
+          <p class="welcome-subtext">Select a section from the left menu to begin</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="status-widget">
+    <h3>System Status</h3>
+    <div id="service-statuses"></div>
+    <a href="/admin/errors/status">View Full Status</a>
+  </div>
+  
+  <script src="/js/status-widget.js"></script>
+  
+  <script src="./js/error-handler.js" defer></script>
+  <script src="./js/panel.js" defer></script>
+  <script>
+    // Mobile menu toggle functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+      const sidebar = document.querySelector('.admin-sidebar');
+      
+      // Show/hide mobile toggle based on viewport
+      function checkViewport() {
+        if (window.innerWidth <= 768) {
+          mobileMenuToggle.hidden = false;
+          sidebar.classList.remove('active');
+        } else {
+          mobileMenuToggle.hidden = true;
+          sidebar.classList.add('active');
+        }
+      }
+      
+      // Initial check
+      checkViewport();
+      
+      // Add resize listener
+      window.addEventListener('resize', checkViewport);
+      
+      // Toggle menu
+      mobileMenuToggle.addEventListener('click', () => {
+        const expanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+        mobileMenuToggle.setAttribute('aria-expanded', !expanded);
+        sidebar.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>

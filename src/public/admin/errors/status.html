@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status</title>
+  <link rel="stylesheet" href="/admin/errors/status.css">
+</head>
+<body>
+  <header class="status-header">
+    <h1>System Status</h1>
+    <div class="status-summary">
+      <span class="status-badge operational">All Systems Operational</span>
+      <span id="lastUpdated">Last updated: Just now</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="services-grid">
+      <!-- Dynamically populated -->
+    </section>
+
+    <section class="incident-history">
+      <h2>Incident History</h2>
+      <div class="timeline">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+    <section class="uptime-history">
+      <h2>Historical Uptime</h2>
+      <div class="time-filters">
+        <button data-range="24h">24 Hours</button>
+        <button data-range="7d">7 Days</button>
+        <button data-range="30d">30 Days</button>
+      </div>
+      <div class="uptime-chart-container">
+        <canvas id="uptime-chart"></canvas>
+      </div>
+    </section>
+    <div class="language-selector">
+      <select id="language-select">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="tr">Türkçe</option>
+      </select>
+    </div>
+  </main>
+
+  <script src="/admin/errors/status.js"></script>
+  <script src="/admin/errors/notifications.js"></script>
+<script src="/admin/errors/maintenance.js"></script>
+<link rel="stylesheet" href="/admin/errors/maintenance.css">
+
+</body>
+</html>

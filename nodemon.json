@@ -1,0 +1,7 @@
+{
+    "events": {
+      "restart": "rs",
+      "crash": "echo 'Crashed!'"
+    },
+    "verbose": true
+  }
