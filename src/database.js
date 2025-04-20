@@ -69,6 +69,36 @@ class UserDatabaseService {
     }
   }
 
+  static async assignRole(userId, role) {
+    const db = await databaseService.getDB();
+    
+    // Verify role exists
+    if (!ADMIN_ROLES[role]) {
+      throw new Error('Invalid role');
+    }
+
+    const result = await db.collection('users').updateOne(
+      { _id: new ObjectId(userId) },
+      { 
+        $set: { 
+          role,
+          permissions: ROLE_PERMISSIONS[role] || {},
+          updatedAt: new Date() 
+        } 
+      }
+    );
+
+    return result.modifiedCount;
+  }
+
+  static async getUsersByRole(role) {
+    const db = await databaseService.getDB();
+    return db.collection('users')
+      .find({ role })
+      .project({ password: 0 })
+      .toArray();
+  }
+
   static getDefaultPermissions(adminClass) {
     return this.ADMIN_PERMISSIONS[adminClass] || {};
   }
@@ -120,6 +150,8 @@ class UserDatabaseService {
 // Named exports
 export const userDBService = {
   authenticate: UserDatabaseService.authenticateUser.bind(UserDatabaseService),
+  assignRole: UserDatabaseService.assignRole.bind(UserDatabaseService),
+  getUsersByRole: UserDatabaseService.getUsersByRole.bind(UserDatabaseService),
   createUser: UserDatabaseService.createUser.bind(UserDatabaseService),
   updateUser: UserDatabaseService.updateUser.bind(UserDatabaseService),
   logActivity: UserDatabaseService.logActivity.bind(UserDatabaseService),

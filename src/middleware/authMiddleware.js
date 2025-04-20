@@ -1,56 +1,62 @@
-// authMiddleware.js (updated)
 import jwt from 'jsonwebtoken';
-import { databaseService as db } from '../config/db.js';
+import { userDBService } from '../services/database.js';
 import { logger } from '../utils/logger.js';
+import { ADMIN_ROLES } from '../config/constants.js';
 
-export const authorize = (roles = []) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.sendStatus(401);
+export const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    if (roles.length && !roles.includes(req.user.role)) {
-      return res.sendStatus(403);
-    }
-    
+    req.user = decoded;
     next();
-  };
+  } catch (error) {
+    logger.error('Token verification error:', error);
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    
+    res.status(401).json({ error: 'Invalid token' });
+  }
 };
 
-export const verifyToken = (roles = []) => {
+export const authorize = (roles = []) => {
   return async (req, res, next) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader?.startsWith('Bearer ')) {
-        return res.sendStatus(401);
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Get fresh database connection
-      const database = await db.getDB();
-      const user = await database.collection('users').findOne({
-        _id: decoded.userId,
-        isActive: true
-      });
+      // Get fresh user data from DB
+      const { user } = await userDBService.authenticate(req.user.username, '', true);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
 
-      if (!user || (roles.length && !roles.includes(user.role))) {
-        return res.sendStatus(403);
+      // SUPERADMIN has all access
+      if (user.role === ADMIN_ROLES.SUPERADMIN) {
+        req.user = user;
+        return next();
+      }
+
+      // Check if user has one of the required roles
+      if (roles.length && !roles.includes(user.role)) {
+        return res.status(403).json({ error: 'Forbidden' });
       }
 
       req.user = user;
       next();
     } catch (error) {
-      logger.error('Authentication error:', error);
-      
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ error: 'Token expired' });
-      }
-      res.sendStatus(401);
+      logger.error('Authorization error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   };
 };
 
-// Add this alias for better readability
 export const authenticate = verifyToken();
