@@ -1,12 +1,11 @@
-import { getDb } from '../config/db.js';
+import { databaseService } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 import { PASSWORD_POLICY } from '../config/constants.js';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import crypto from 'crypto';
 
-class DatabaseService {
-  static #connectionPool;
+class UserDatabaseService {
   static ADMIN_PERMISSIONS = {
     OWNER: {
       VIEW_DASHBOARD: true,
@@ -31,34 +30,13 @@ class DatabaseService {
     }
   };
 
-  static async #getDatabase() {
-    if (!this.#connectionPool) {
-      try {
-        this.#connectionPool = await getDb();
-        logger.info('Database connection pool established');
-      } catch (error) {
-        logger.error('Database connection failed:', error);
-        throw error;
-      }
-    }
-    return this.#connectionPool;
-  }
-
-  static async closeConnection() {
-    if (this.#connectionPool) {
-      await this.#connectionPool.close();
-      this.#connectionPool = null;
-      logger.info('Database connection pool closed');
-    }
-  }
-
   static async authenticateUser(identifier, password, isAdminLogin = false) {
-    const database = await this.#getDatabase();
+    const db = await databaseService.getDB();
     const collectionName = isAdminLogin ? 'admins' : 'users';
     const usernameField = isAdminLogin ? 'adminName' : 'username';
 
     try {
-      const user = await database.collection(collectionName).findOne({
+      const user = await db.collection(collectionName).findOne({
         $or: [
           { [usernameField]: identifier },
           { email: identifier }
@@ -71,7 +49,7 @@ class DatabaseService {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) return { success: false, error: 'Invalid credentials' };
 
-      await database.collection(collectionName).updateOne(
+      await db.collection(collectionName).updateOne(
         { _id: user._id },
         { $set: { lastLogin: new Date() } }
       );
@@ -83,7 +61,7 @@ class DatabaseService {
           username: user[usernameField],
           email: user.email,
           role: user.adminClass || 'player',
-          permissions: user.permissions,
+          permissions: user.permissions || this.getDefaultPermissions(user.adminClass),
           isAdmin: isAdminLogin
         }
       };
@@ -93,7 +71,59 @@ class DatabaseService {
     }
   }
 
-  // ... (other methods remain the same with proper error handling)
+  static getDefaultPermissions(adminClass) {
+    return this.ADMIN_PERMISSIONS[adminClass] || {};
+  }
+
+  static async createUser(userData) {
+    const db = await databaseService.getDB();
+    
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 12);
+    }
+
+    const result = await db.collection('users').insertOne({
+      ...userData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isActive: true
+    });
+
+    return result.insertedId;
+  }
+
+  static async updateUser(userId, updateData) {
+    const db = await databaseService.getDB();
+    
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 12);
+    }
+
+    const result = await db.collection('users').updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { ...updateData, updatedAt: new Date() } }
+    );
+
+    return result.modifiedCount;
+  }
+
+  static async logActivity(userId, activityType, metadata = {}) {
+    const db = await databaseService.getDB();
+    
+    await db.collection('activitylogs').insertOne({
+      userId: new ObjectId(userId),
+      activityType,
+      metadata,
+      timestamp: new Date()
+    });
+  }
 }
 
-export const databaseService = new DatabaseService();
+// Named exports
+export const userDBService = {
+  authenticate: UserDatabaseService.authenticateUser.bind(UserDatabaseService),
+  createUser: UserDatabaseService.createUser.bind(UserDatabaseService),
+  updateUser: UserDatabaseService.updateUser.bind(UserDatabaseService),
+  logActivity: UserDatabaseService.logActivity.bind(UserDatabaseService),
+  permissions: UserDatabaseService.ADMIN_PERMISSIONS
+};

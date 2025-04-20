@@ -9,6 +9,7 @@ class Database {
   static #db = null;
   static #connectionPromise = null;
   static #healthCheckInterval = null;
+  static #isInitialized = false;
 
   static async connect() {
     if (this.#db) return this.#db;
@@ -25,14 +26,16 @@ class Database {
         logger.info(`✅ Connected to database: ${DB_CONFIG.NAME}`);
         this.startHealthMonitoring();
         
-        // Initialize status monitoring collection
-        await this.initializeStatusCollections();
+        if (!this.#isInitialized) {
+          await this.initializeCollections();
+          this.#isInitialized = true;
+        }
         
         resolve(this.#db);
       } catch (error) {
         logger.error('Database connection failed:', error);
         statusMonitor.logIncident({
-          code: 'DB_201',
+          code: 'DB_CONNECTION_FAILED',
           message: 'MongoDB connection failed',
           severity: 'CRITICAL',
           stack: error.stack
@@ -45,18 +48,42 @@ class Database {
     return this.#connectionPromise;
   }
 
-  static async initializeStatusCollections() {
+  static async initializeCollections() {
     try {
       const db = await this.getDB();
-      await db.collection('uptimerecords').createIndex(
-        { service: 1, date: 1 }, 
-        { unique: true }
-      );
-      await db.collection('incidents').createIndex(
-        { components: 1, startTime: -1 }
-      );
+      
+      // Uptime Records Collection
+      await db.collection('uptimerecords').createIndexes([
+        { key: { service: 1, timestamp: 1 }, unique: true },
+        { key: { service: 1 } },
+        { key: { timestamp: -1 } }
+      ]);
+
+      // Incidents Collection
+      await db.collection('incidents').createIndexes([
+        { key: { code: 1 } },
+        { key: { severity: 1 } },
+        { key: { timestamp: -1 } }
+      ]);
+
+      // Users Collection
+      await db.collection('users').createIndexes([
+        { key: { email: 1 }, unique: true },
+        { key: { username: 1 }, unique: true },
+        { key: { lastLogin: -1 } }
+      ]);
+
+      // Admins Collection
+      await db.collection('admins').createIndexes([
+        { key: { adminName: 1 }, unique: true },
+        { key: { email: 1 }, unique: true },
+        { key: { adminClass: 1 } }
+      ]);
+
+      logger.info('✅ Database collections initialized');
     } catch (error) {
-      logger.error('Failed to initialize status collections:', error);
+      logger.error('Failed to initialize database collections:', error);
+      throw error;
     }
   }
 
@@ -68,18 +95,27 @@ class Database {
         const db = await this.getDB();
         await db.command({ ping: 1 });
         
-        // Log successful health check
         await UptimeRecord.create({
           service: 'database',
-          date: new Date(),
           uptimePercentage: 100,
-          downtimeMinutes: 0
+          responseTime: Date.now(),
+          status: 'healthy',
+          timestamp: new Date()
         });
       } catch (error) {
         logger.error('Database health check failed:', error);
+        await UptimeRecord.create({
+          service: 'database',
+          uptimePercentage: 0,
+          responseTime: null,
+          status: 'unhealthy',
+          error: error.message,
+          timestamp: new Date()
+        });
+        
         statusMonitor.logIncident({
-          code: 'DB_201',
-          message: 'MongoDB health check failed',
+          code: 'DB_HEALTH_CHECK_FAILED',
+          message: 'Database health check failed',
           severity: 'HIGH',
           stack: error.stack
         });
@@ -112,55 +148,49 @@ class Database {
       this.#client = null;
       this.#db = null;
       this.#connectionPromise = null;
+      this.#isInitialized = false;
       logger.info('Database connection closed');
     }
   }
 
-  static async logUptime(service, uptimeData) {
+  static async backupDatabase() {
     try {
-      const db = await this.getDB();
-      return db.collection('uptimerecords').insertOne({
-        service,
-        ...uptimeData,
-        timestamp: new Date()
-      });
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupName = `backup-${timestamp}`;
+      
+      const { stdout } = await exec(`mongodump --uri="${DB_CONFIG.URI}" --out=./backups/${backupName}`);
+      logger.info(`Database backup created: ${backupName}`);
+      return { success: true, backupName };
     } catch (error) {
-      logger.error('Failed to log uptime:', error);
+      logger.error('Database backup failed:', error);
       throw error;
     }
   }
 
-  static async getUptimeStats(service, period = '30d') {
-    const db = await this.getDB();
-    const dateFilter = this.getDateFilter(period);
-    
-    return db.collection('uptimerecords').aggregate([
-      { $match: { service, timestamp: dateFilter } },
-      { $group: {
-        _id: null,
-        avgUptime: { $avg: '$uptimePercentage' },
-        totalDowntime: { $sum: '$downtimeMinutes' },
-        incidents: { $sum: { $size: '$incidents' } }
-      }}
-    ]).toArray();
-  }
-
-  static getDateFilter(period) {
-    const now = new Date();
-    switch(period) {
-      case '24h': return { $gte: new Date(now - 86400000) };
-      case '7d': return { $gte: new Date(now - 604800000) };
-      case '30d': return { $gte: new Date(now - 2592000000) };
-      default: return { $gte: new Date(0) };
+  static async getCollectionStats(collectionName) {
+    try {
+      const db = await this.getDB();
+      const collection = db.collection(collectionName);
+      
+      return {
+        count: await collection.countDocuments(),
+        storageSize: await collection.stats().then(s => s.storageSize),
+        indexSize: await collection.stats().then(s => s.totalIndexSize)
+      };
+    } catch (error) {
+      logger.error(`Failed to get stats for collection ${collectionName}:`, error);
+      throw error;
     }
   }
 }
 
-export const db = {
+// Named exports
+export const databaseService = {
   connect: Database.connect.bind(Database),
   getDB: Database.getDB.bind(Database),
   getClient: Database.getClient.bind(Database),
   close: Database.close.bind(Database),
-  logUptime: Database.logUptime.bind(Database),
-  getUptimeStats: Database.getUptimeStats.bind(Database)
+  backup: Database.backupDatabase.bind(Database),
+  getStats: Database.getCollectionStats.bind(Database),
+  initialize: Database.initializeCollections.bind(Database)
 };
