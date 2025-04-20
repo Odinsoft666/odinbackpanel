@@ -2,7 +2,6 @@ import { databaseService } from './config/db.js';
 import { logger } from './utils/logger.js';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
-;
 
 class UserDatabaseService {
   static ADMIN_PERMISSIONS = {
@@ -126,3 +125,6 @@ export const userDBService = {
   logActivity: UserDatabaseService.logActivity.bind(UserDatabaseService),
   permissions: UserDatabaseService.ADMIN_PERMISSIONS
 };
+
+// Default export
+export default UserDatabaseService;
