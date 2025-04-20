@@ -28,17 +28,17 @@ export const generateJWT = (payload) => {
   }
   
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: CONSTANTS.TOKEN_EXPIRY.session / 1000,
-    issuer: process.env.JWT_ISSUER,
-    audience: process.env.JWT_AUDIENCE
+    expiresIn: CONSTANTS.TOKEN_EXPIRY.session,
+    issuer: CONSTANTS.JWT_CONFIG.issuer,
+    audience: CONSTANTS.JWT_CONFIG.audience
   });
 };
 
 export const verifyJWT = (token) => {
   try {
     return jwt.verify(token, process.env.JWT_ACCESS_SECRET, {
-      issuer: process.env.JWT_ISSUER,
-      audience: process.env.JWT_AUDIENCE
+      issuer: CONSTANTS.JWT_CONFIG.issuer,
+      audience: CONSTANTS.JWT_CONFIG.audience
     });
   } catch (err) {
     logger.error('JWT verification failed:', err);
@@ -50,7 +50,7 @@ export const generateTOTPSecret = () => {
   return speakeasy.generateSecret({
     length: 32,
     name: process.env.APP_NAME,
-    issuer: process.env.JWT_ISSUER
+    issuer: CONSTANTS.JWT_CONFIG.issuer
   });
 };
 

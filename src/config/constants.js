@@ -43,14 +43,23 @@ export const SERVER_CONFIG = {
   ENV: process.env.NODE_ENV || 'development'
 };
 
-
 export const JWT_CONFIG = {
   issuer: 'odinsoft',
   audience: 'admin-panel'
 };
 
-
 export const TOKEN_EXPIRY = {
   session: '15m',
   refresh: '7d'
+};
+
+// Named export combining all constants
+export const CONSTANTS = {
+  ADMIN_CLASSES,
+  PASSWORD_POLICY,
+  DB_CONFIG,
+  SESSION_CONFIG,
+  SERVER_CONFIG,
+  JWT_CONFIG,
+  TOKEN_EXPIRY
 };
