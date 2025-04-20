@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
-import { db } from './config/db.js';
+import { databaseService as db } from './config/db.js';
 import { SESSION_CONFIG, SERVER_CONFIG } from './config/constants.js';
 import { logger } from './utils/logger.js';
 import session from 'express-session';

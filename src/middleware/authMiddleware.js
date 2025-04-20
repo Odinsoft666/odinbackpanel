@@ -1,6 +1,6 @@
 // authMiddleware.js (updated)
 import jwt from 'jsonwebtoken';
-import { db } from '../config/db.js';
+import { databaseService as db } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 
 export const authorize = (roles = []) => {

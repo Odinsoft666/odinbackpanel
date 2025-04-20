@@ -1,9 +1,8 @@
-import { databaseService } from '../config/db.js';
-import { logger } from '../utils/logger.js';
-import { PASSWORD_POLICY } from '../config/constants.js';
+import { databaseService } from './config/db.js';
+import { logger } from './utils/logger.js';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
-import crypto from 'crypto';
+;
 
 class UserDatabaseService {
   static ADMIN_PERMISSIONS = {
