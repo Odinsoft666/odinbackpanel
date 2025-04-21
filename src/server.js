@@ -22,6 +22,17 @@ import { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { exec } from 'child_process';
 import twilio from 'twilio';
+import { User } from './models/User.js';
+import { Admin } from '../models/Admin.js';
+import { Incident } from './models/Incident.js';
+import { Maintenance } from './models/Maintenance.js';
+import { Notification } from './models/Notification.js';
+import { UptimeRecord } from './models/UptimeRecord.js';
+import { BalanceHistory } from './models/BalanceHistory.js';
+import { Bet } from './models/Bet.js';
+import { Device } from './models/Device.js';
+import { Investment } from './models/Investment.js';
+import { Withdrawal } from './models/Withdrawal.js';
 
 
 const __filename = fileURLToPath(import.meta.url);

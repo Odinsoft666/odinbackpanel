@@ -1,7 +1,7 @@
 // src/controllers/userController.js
 import User from '../models/User.js';
 import BalanceHistory from '../models/BalanceHistory.js';
-import AdminLog from '../models/AdminLog.js';
+import AdminLog from '../models/AdminLog.js'; // Import statement for AdminLog
 import Device from '../models/Device.js';
 import Bet from '../models/Bet.js';
 import Investment from '../models/Investment.js';

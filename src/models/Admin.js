@@ -1,3 +1,4 @@
+// src/models/Admin.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -16,7 +17,6 @@ const AdminRoles = [
 ];
 
 const AdminSchema = new mongoose.Schema({
-  // Authentication
   adminName: {
     type: String,
     required: true,
@@ -37,8 +37,6 @@ const AdminSchema = new mongoose.Schema({
     minlength: 12,
     select: false
   },
-  
-  // Role and Permissions
   role: {
     type: String,
     enum: AdminRoles,
@@ -59,14 +57,10 @@ const AdminSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
-  // Personal Information
   firstName: String,
   lastName: String,
   phone: String,
   department: String,
-  
-  // Security
   twoFactorEnabled: { type: Boolean, default: true },
   lastLogin: Date,
   lastIp: String,
@@ -77,21 +71,16 @@ const AdminSchema = new mongoose.Schema({
   }],
   failedLoginAttempts: { type: Number, default: 0 },
   accountLockedUntil: Date,
-  
-  // Activity Tracking
   lastActivity: Date,
   activityLog: [{
     action: String,
     details: mongoose.Schema.Types.Mixed,
     timestamp: { type: Date, default: Date.now }
   }],
-  
-  // Status
   isActive: { type: Boolean, default: true },
   notes: String
 }, { timestamps: true });
 
-// Static method for owner creation
 AdminSchema.statics.createOwner = async function() {
   const ownerExists = await this.findOne({ isOwner: true });
   if (!ownerExists) {
@@ -118,7 +107,6 @@ AdminSchema.statics.createOwner = async function() {
   }
 };
 
-// Password hashing middleware
 AdminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -131,21 +119,18 @@ AdminSchema.pre('save', async function(next) {
   }
 });
 
-// Password comparison method
 AdminSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Virtual for full name
 AdminSchema.virtual('fullName').get(function() {
   return `${this.firstName || ''} ${this.lastName || ''}`.trim();
 });
 
-// Indexes
 AdminSchema.index({ adminName: 1 });
 AdminSchema.index({ email: 1 });
 AdminSchema.index({ role: 1 });
 AdminSchema.index({ isActive: 1 });
 AdminSchema.index({ lastActivity: -1 });
 
-export default mongoose.model('Admin', AdminSchema);
+export const Admin = mongoose.model('Admin', AdminSchema);

@@ -167,11 +167,6 @@ UserSchema.virtual('totalBalance').get(function() {
 });
 
 // Indexes
-UserSchema.index({ username: 1 });
-UserSchema.index({ email: 1 });
-UserSchema.index({ referralCode: 1 }, { unique: true, sparse: true });
-UserSchema.index({ status: 1 });
-UserSchema.index({ kycStatus: 1 });
 UserSchema.index({ 'devices.deviceId': 1 });
 UserSchema.index({ 'devices.macAddress': 1 });
 UserSchema.index({ 'devices.ipAddress': 1 });
