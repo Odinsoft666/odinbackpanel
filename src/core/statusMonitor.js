@@ -1,20 +1,25 @@
 import { EventEmitter } from 'events';
-import { Incident } from '../models/Incident.js';
-import { Maintenance } from '../models/Maintenance.js';
-import { UptimeRecord } from '../models/UptimeRecord.js';
-import User from '../models/User.js';
+import { User } from '../models/User.js';
 import { Notification } from '../models/Notification.js';
+import { Maintenance } from '../models/Maintenance.js';
 import { sendEmail } from '../utils/email.js';
 import { logger } from '../utils/logger.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+console.log('Current file path:', __filename);
+console.log('Resolved User.js path:', path.resolve(path.dirname(__filename), '../../models/User.js'));
+
 
 class StatusMonitor extends EventEmitter {
   constructor() {
     super();
     this.services = {
-      api: { name: 'API Gateway', status: 'operational', uptime: 100 },
-      database: { name: 'Database', status: 'operational', uptime: 100 },
-      payment: { name: 'Payment Gateway', status: 'operational', uptime: 100 },
-      auth: { name: 'Authentication', status: 'operational', uptime: 100 }
+     api: { name: 'API Gateway', status: 'operational', uptime: 100 },
+     database: { name: 'Database', status: 'operational', uptime: 100 },
+     payment: { name: 'Payment Gateway', status: 'operational', uptime: 100 },
+     auth: { name: 'Authentication', status: 'operational', uptime: 100 }
     };
     this.maintenanceMode = false;
     this.intervals = {};
@@ -193,5 +198,6 @@ class StatusMonitor extends EventEmitter {
 
   // ... (rest of the existing methods remain unchanged)
 }
+
 
 export const statusMonitor = new StatusMonitor();

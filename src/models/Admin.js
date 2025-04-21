@@ -79,15 +79,24 @@ const AdminSchema = new mongoose.Schema({
   }],
   isActive: { type: Boolean, default: true },
   notes: String
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
+// Static method to create owner account
 AdminSchema.statics.createOwner = async function() {
+  if (!process.env.OWNER_DEFAULT_PASSWORD) {
+    throw new Error('OWNER_DEFAULT_PASSWORD environment variable not set');
+  }
+
   const ownerExists = await this.findOne({ isOwner: true });
   if (!ownerExists) {
     await this.create({
       adminName: 'ODIN',
       email: 'owner@odinsite.com',
-      password: process.env.OWNER_DEFAULT_PASSWORD || 'ChangeMe123!',
+      password: process.env.OWNER_DEFAULT_PASSWORD,
       role: 'OWNER',
       isOwner: true,
       firstName: 'System',
@@ -101,12 +110,14 @@ AdminSchema.statics.createOwner = async function() {
         gameManagement: true,
         reportAccess: true,
         systemSettings: true
-      }
+      },
+      twoFactorEnabled: false // Disabled for initial setup
     });
-    console.log('Owner account created');
+    logger.info('🔑 Owner account created successfully');
   }
 };
 
+// Password hashing middleware
 AdminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -119,18 +130,28 @@ AdminSchema.pre('save', async function(next) {
   }
 });
 
+// Password comparison method
 AdminSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Virtual for full name
 AdminSchema.virtual('fullName').get(function() {
   return `${this.firstName || ''} ${this.lastName || ''}`.trim();
 });
 
-AdminSchema.index({ adminName: 1 });
-AdminSchema.index({ email: 1 });
+// Indexes (only for non-unique fields and compound indexes)
 AdminSchema.index({ role: 1 });
 AdminSchema.index({ isActive: 1 });
 AdminSchema.index({ lastActivity: -1 });
+AdminSchema.index({ 
+  isActive: 1, 
+  role: 1 
+});
+AdminSchema.index({
+  'activityLog.action': 1,
+  'activityLog.timestamp': -1
+});
 
-export const Admin = mongoose.model('Admin', AdminSchema);
+const Admin = mongoose.model('Admin', AdminSchema);
+export { Admin };

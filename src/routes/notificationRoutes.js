@@ -3,7 +3,7 @@ import { Notification } from '../models/Notification.js';
 import { verifyToken, authorize } from '../middleware/authMiddleware.js'; // Changed authenticate to verifyToken
 import { validate } from '../middleware/validation.js';
 import { logger } from '../utils/logger.js';
-import User from '../models/User.js';
+import { User } from './models/User.js';
 
 const router = express.Router();
 

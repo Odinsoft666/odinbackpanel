@@ -1,7 +1,6 @@
 // src/models/AdminLog.js
 import mongoose from 'mongoose';
 
-// Define the schema for the AdminLog model
 const AdminLogSchema = new mongoose.Schema({
   adminId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,13 +20,11 @@ const AdminLogSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
 
-// Create the model
+// Change from default export to named export
 const AdminLog = mongoose.model('AdminLog', AdminLogSchema);
-
-// Export the model
-export default AdminLog;
+export { AdminLog };  // Changed this line

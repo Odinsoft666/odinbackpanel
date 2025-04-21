@@ -21,4 +21,5 @@ const NotificationSchema = new mongoose.Schema({
   index: { userId: 1, read: 1 } 
 });
 
-export const Notification = mongoose.model('Notification', NotificationSchema);
+const Notification = mongoose.model('Notification', NotificationSchema);
+export { Notification }; 

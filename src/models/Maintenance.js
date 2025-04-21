@@ -28,4 +28,5 @@ MaintenanceSchema.post('save', async function(doc) {
   }
 });
 
-export const Maintenance = mongoose.model('Maintenance', MaintenanceSchema);
+const Maintenance = mongoose.model('Maintenance', MaintenanceSchema);
+export { Maintenance };
