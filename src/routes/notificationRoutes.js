@@ -1,14 +1,14 @@
 import express from 'express';
 import { Notification } from '../models/Notification.js';
-import { verifyToken, authorize } from '../middleware/authMiddleware.js'; // Changed authenticate to verifyToken
+import { protect, authorize } from '../middleware/routeProtection.js';
 import { validate } from '../middleware/validation.js';
 import { logger } from '../utils/logger.js';
-import { User } from './models/User.js';
+import { User } from '../models/User.js';
 
 const router = express.Router();
 
 // Get user notifications
-router.get('/', verifyToken, async (req, res) => {  // Changed authenticate to verifyToken
+router.get('/', protect, async (req, res) => {
   try {
     const notifications = await Notification.find({ 
       userId: req.user._id 
@@ -22,7 +22,7 @@ router.get('/', verifyToken, async (req, res) => {  // Changed authenticate to v
 });
 
 // Mark notification as read
-router.patch('/:id/read', verifyToken, async (req, res) => {  // Changed authenticate to verifyToken
+router.patch('/:id/read', protect, async (req, res) => {
   try {
     const notification = await Notification.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
@@ -42,7 +42,7 @@ router.patch('/:id/read', verifyToken, async (req, res) => {  // Changed authent
 });
 
 // Update notification preferences
-router.put('/preferences', verifyToken, validate, async (req, res) => {  // Changed authenticate to verifyToken
+router.put('/preferences', protect, validate, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.user._id,

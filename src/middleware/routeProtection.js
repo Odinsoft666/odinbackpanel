@@ -1,10 +1,8 @@
-// src/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
 import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
 import { ADMIN_ROLES } from '../config/constants.js';
 
-// Renamed to 'protect' for clearer semantics
 export const protect = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || req.headers.Authorization;
@@ -44,7 +42,6 @@ export const protect = (req, res, next) => {
   }
 };
 
-// Flexible role authorization middleware
 export const authorize = (roles = []) => {
   return async (req, res, next) => {
     try {
@@ -56,7 +53,6 @@ export const authorize = (roles = []) => {
         });
       }
 
-      // Get fresh user data from DB
       const { user } = await userDBService.authenticate(req.user.username, '', true);
       if (!user) {
         logger.warn(`User not found: ${req.user.username}`);
@@ -66,13 +62,11 @@ export const authorize = (roles = []) => {
         });
       }
 
-      // SUPERADMIN bypasses all role checks
       if (user.role === ADMIN_ROLES.SUPERADMIN) {
         req.user = user;
         return next();
       }
 
-      // Check if user has required role
       if (roles.length && !roles.includes(user.role)) {
         logger.warn(`User ${user.username} attempted unauthorized access to ${req.originalUrl}`);
         return res.status(403).json({ 
@@ -93,10 +87,8 @@ export const authorize = (roles = []) => {
   };
 };
 
-// Convenience middleware for admin-only routes
 export const admin = authorize([ADMIN_ROLES.SUPERADMIN]);
 
-// Middleware to check if user is logged in (without failing)
 export const optionalAuth = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
   

@@ -1,7 +1,7 @@
 import express from 'express';
 import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
-import { verifyToken, authorize } from '../middleware/authMiddleware.js';
+import { verifyToken, authorize } from '../middleware/routeProtection.js';
 
 
 

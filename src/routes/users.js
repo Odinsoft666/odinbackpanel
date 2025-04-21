@@ -10,7 +10,7 @@ import {
   getPlayerWithdrawals,
   getAllPlayers
 } from '../controllers/userController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, admin } from '../middleware/routeProtection.js';
 
 const router = express.Router();
 

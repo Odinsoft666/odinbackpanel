@@ -20,22 +20,10 @@ import compression from 'compression';
 import responseTime from 'response-time';
 import { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import { exec } from 'child_process';
 import twilio from 'twilio';
-import { User } from './models/User.js';
-import { Admin } from './models/Admin.js';
-import { Incident } from './models/Incident.js';
-import { Maintenance } from './models/Maintenance.js';
-import { Notification } from './models/Notification.js';
-import { BalanceHistory } from './models/BalanceHistory.js';
-import { Bet } from './models/Bet.js';
-import { Device } from './models/Device.js';
-import { Investment } from './models/Investment.js';
-import { Withdrawal } from './models/Withdrawal.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const { default: userRoutes } = await import('./routes/users.js');
 
 // Initialize Twilio client if credentials exist
 const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN 
@@ -94,7 +82,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     max: parseInt(process.env.GLOBAL_RATE_LIMIT) || 1000,
     standardHeaders: true,
     legacyHeaders: false,
-    message: 'Too many requests from this IP, please try again later'
+    message: '⏳ Too many requests from this IP, please try again later'
   });
 
   const speedLimiter = slowDown({
@@ -141,9 +129,9 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         rolling: true,
         proxy: process.env.NODE_ENV === 'production'
       }));
-      logger.info('✅ Session configuration loaded');
+      logger.info('🔐 Session configuration loaded');
     } catch (error) {
-      logger.error('Failed to initialize session:', error);
+      logger.error('🚨 Failed to initialize session:', error);
       throw error;
     }
   }
@@ -154,15 +142,14 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     
     wss.on('connection', (ws) => {
       ws.id = uuidv4();
-      logger.info(`New WebSocket connection: ${ws.id}`);
+      logger.info(`🌐 New WebSocket connection: ${ws.id}`);
       
       ws.on('message', (message) => {
-        logger.info(`Received message: ${message}`);
-        // Handle WebSocket messages here
+        logger.info(`📩 Received message: ${message}`);
       });
       
       ws.on('close', () => {
-        logger.info(`WebSocket disconnected: ${ws.id}`);
+        logger.info(`🌐➖ WebSocket disconnected: ${ws.id}`);
       });
     });
     
@@ -170,45 +157,42 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     logger.info('✅ WebSocket server initialized');
   }
 
-  // ==================== ROUTES ====================
-  async function initializeRoutes() {
-    try {
-      // Dynamic imports for better startup performance
-      const { default: statusRoutes } = await import('./routes/statusRoutes.js');
-      const { default: maintenanceRoutes } = await import('./routes/maintenanceRoutes.js');
-      const { default: notificationRoutes } = await import('./routes/notificationRoutes.js');
-      const { default: authRoutes } = await import('./routes/auth.js');
-      const { default: adminRoutes } = await import('./routes/admin.js');
-      const { default: userRoutes } = await import('./routes/users.js');
-      const { default: gameRoutes } = await import('./routes/games.js');
-      const { default: affiliateRoutes } = await import('./routes/affiliates.js');
-      const { default: bonusRoutes } = await import('./routes/bonuses.js');
-      const { default: contentRoutes } = await import('./routes/content.js');
-      const { default: smsRoutes } = await import('./routes/sms.js');
-      const { default: emailRoutes } = await import('./routes/email.js');
+// ==================== ROUTES ====================
+async function initializeRoutes() {
+  try {
+    // Dynamic imports for better startup performance
+    const { default: statusRoutes } = await import('./routes/statusRoutes.js');
+    const { default: maintenanceRoutes } = await import('./routes/maintenanceRoutes.js');
+    const { default: notificationRoutes } = await import('./routes/notificationRoutes.js');
+    const { default: authRoutes } = await import('./routes/auth.js');
+    const { default: adminRoutes } = await import('./routes/admin.js');
+    const { default: userRoutes } = await import('./routes/users.js');
+    const { default: gameRoutes } = await import('./routes/games.js');
+    const { default: affiliateRoutes } = await import('./routes/affiliates.js');
+    const { default: bonusRoutes } = await import('./routes/bonuses.js');
+    const { default: contentRoutes } = await import('./routes/content.js');
+    const { default: smsRoutes } = await import('./routes/sms.js');
+    const { default: emailRoutes } = await import('./routes/email.js');
 
-      
-      const authMiddleware = await import('./middleware/authMiddleware.js');
-      const verifyToken = authMiddleware.verifyToken;
-      const authorize = authMiddleware.authorize;
-      const { errorHandler } = await import('./middleware/errorHandler.js');
-      const { isAdmin } = await import('./middleware/roleMiddleware.js');
+    // ✅ Correct middleware imports - only import once
+    const { protect, authorize, admin } = await import('./middleware/routeProtection.js');
+    const { errorHandler } = await import('./middleware/errorHandler.js');
+    const { isAdmin } = await import('./middleware/roleMiddleware.js');
 
-      // API Routes
-      app.use('/api/status', statusRoutes);
-      app.use('/api/maintenance', maintenanceRoutes);
-      app.use('/api/notifications', notificationRoutes);
-      app.use('/api/auth', authRoutes);
-      app.use('/api/admin', verifyToken, authorize(['SUPERADMIN']), adminRoutes);
-      app.use('/api/users', verifyToken, userRoutes);
-      app.use('/api/games', verifyToken, gameRoutes);
-      app.use('/api/affiliates', verifyToken, affiliateRoutes);
-      app.use('/api/bonuses', verifyToken, bonusRoutes);
-      app.use('/api/content', verifyToken, contentRoutes);
-      app.use('/api/sms', verifyToken, smsRoutes);
-      app.use('/api/email', verifyToken, emailRoutes);
-      app.use('/api/reports', verifyToken, isAdmin, reportRoutes);
-      app.use('/api/payments', verifyToken, paymentRoutes);
+    // API Routes with updated middleware
+    app.use('/api/status', statusRoutes);
+    app.use('/api/maintenance', maintenanceRoutes);
+    app.use('/api/notifications', notificationRoutes);
+    app.use('/api/auth', authRoutes);
+    app.use('/api/admin', protect, admin, adminRoutes);  // Using the admin middleware
+    app.use('/api/users', protect, userRoutes);
+    app.use('/api/games', protect, gameRoutes);
+    app.use('/api/affiliates', protect, affiliateRoutes);
+    app.use('/api/bonuses', protect, bonusRoutes);
+    app.use('/api/content', protect, contentRoutes);
+    app.use('/api/sms', protect, smsRoutes);
+    app.use('/api/email', protect, emailRoutes);
+
 
       // Static Files
       app.use(express.static(path.join(__dirname, 'public'), {
@@ -231,24 +215,24 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         res.sendFile(path.join(__dirname, 'public', 'login.html'));
       });
 
-      app.get('/dashboard', verifyToken, (req, res) => {
+      app.get('/dashboard', protect, (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
       });
 
-      app.get('/admin', verifyToken, isAdmin, (req, res) => {
+      app.get('/admin', protect, isAdmin, (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'admin.html'));
       });
 
       // Health Check
       app.get('/health', (req, res) => {
         res.json({
-          status: 'OK',
+          status: '✅ OK',
           uptime: process.uptime(),
           timestamp: new Date().toISOString(),
           environment: process.env.NODE_ENV,
           version: process.env.npm_package_version,
-          database: 'connected',
-          sessionStore: 'active',
+          database: '💾 connected',
+          sessionStore: '🔐 active',
           memoryUsage: process.memoryUsage(),
           loadAvg: os.loadavg(),
           connectedClients: app.locals.wss?.clients.size || 0
@@ -258,7 +242,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       // 404 Handler
       app.use((req, res) => {
         res.status(404).json({
-          error: 'Not Found',
+          error: '🔍 Not Found',
           message: 'The requested resource was not found',
           path: req.path
         });
@@ -267,9 +251,9 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       // Error Handler
       app.use(errorHandler);
 
-      logger.info('✅ Routes initialized');
+      logger.info('🛣️  Routes initialized');
     } catch (error) {
-      logger.error('Failed to initialize routes:', error);
+      logger.error('🚨 Failed to initialize routes:', error);
       throw error;
     }
   }
@@ -284,7 +268,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
           try {
             await statusMonitor.checkScheduledMaintenance();
           } catch (error) {
-            logger.error('Maintenance check failed:', error);
+            logger.error('🛠️ Maintenance check failed:', error);
           }
         },
         null,
@@ -298,9 +282,9 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         async () => {
           try {
             await db.backupDatabase();
-            logger.info('Database backup completed successfully');
+            logger.info('💾 Database backup completed successfully');
           } catch (error) {
-            logger.error('Database backup failed:', error);
+            logger.error('💾 Database backup failed:', error);
           }
         },
         null,
@@ -308,55 +292,9 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         'UTC'
       );
 
-      // Log memory usage every hour
-      new CronJob(
-        '0 * * * *',
-        () => {
-          const memoryUsage = process.memoryUsage();
-          logger.info(`Memory usage: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`);
-        },
-        null,
-        true,
-        'UTC'
-      );
-
-      // Process bonus awards every day at midnight
-      new CronJob(
-        '0 0 * * *',
-        async () => {
-          try {
-            logger.info('Starting daily bonus processing...');
-            // Implement your bonus awarding logic here
-            logger.info('Daily bonus processing completed');
-          } catch (error) {
-            logger.error('Bonus processing failed:', error);
-          }
-        },
-        null,
-        true,
-        'UTC'
-      );
-
-      // Process affiliate commissions every Sunday at 3 AM
-      new CronJob(
-        '0 3 * * 0',
-        async () => {
-          try {
-            logger.info('Starting affiliate commission processing...');
-            // Implement your affiliate commission logic here
-            logger.info('Affiliate commission processing completed');
-          } catch (error) {
-            logger.error('Affiliate commission processing failed:', error);
-          }
-        },
-        null,
-        true,
-        'UTC'
-      );
-
-      logger.info('✅ Cron jobs initialized');
+      logger.info('⏰ Cron jobs initialized');
     } catch (error) {
-      logger.error('Failed to initialize cron jobs:', error);
+      logger.error('🚨 Failed to initialize cron jobs:', error);
     }
   }
 
@@ -368,7 +306,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
 
       logger.info('⏳ Connecting to database...');
       await db.connect();
-      logger.info('✅ Database connection established');
+      logger.info('💾 Database connection established');
 
       await initializeSession();
       await initializeRoutes();
@@ -378,7 +316,6 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         logger.info(`🌐 Allowed origins: ${process.env.ALLOWED_ORIGINS}`);
         logger.info(`🛡️  Security headers enabled`);
         logger.info(`⏱️  Rate limiting: ${process.env.GLOBAL_RATE_LIMIT} req/${process.env.RATE_LIMIT_WINDOW}min`);
-        logger.info(`💾 Database: ${process.env.MONGODB_URI.split('@')[1]?.split('/')[0] || 'local'}`);
       });
 
       initializeWebSocket(server);
@@ -386,14 +323,13 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
 
       await verifyEmailConnection();
       if (twilioClient) {
-        logger.info('✅ SMS service (Twilio) initialized');
+        logger.info('📱 SMS service (Twilio) initialized');
       }
 
       // Graceful shutdown
       const shutdown = async () => {
         logger.warn('🛑 Received shutdown signal. Closing server gracefully...');
         
-        // Close WebSocket connections
         if (app.locals.wss) {
           app.locals.wss.clients.forEach(client => client.close());
           app.locals.wss.close();
@@ -414,19 +350,18 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       process.on('SIGTERM', shutdown);
       process.on('SIGINT', shutdown);
 
-      // Error handlers
       process.on('uncaughtException', (error) => {
-        logger.fatal('UNCAUGHT EXCEPTION! 💥', error);
+        logger.fatal('💥 UNCAUGHT EXCEPTION!', error);
         shutdown();
       });
 
       process.on('unhandledRejection', (reason) => {
-        logger.fatal('UNHANDLED REJECTION! 💥', reason instanceof Error ? reason : new Error(reason));
+        logger.fatal('💥 UNHANDLED REJECTION!', reason instanceof Error ? reason : new Error(reason));
         shutdown();
       });
 
     } catch (error) {
-      logger.error('Failed to start server:', {
+      logger.error('🚨 Failed to start server:', {
         message: error.message,
         stack: error.stack
       });
@@ -440,11 +375,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       'MONGODB_URI',
       'ALLOWED_ORIGINS',
       'JWT_ACCESS_SECRET',
-      'JWT_REFRESH_SECRET',
-      'EMAIL_HOST',
-      'EMAIL_PASS',
-      'ADMIN_EMAIL',
-      'ADMIN_PASSWORD_HASH'
+      'JWT_REFRESH_SECRET'
     ];
 
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
@@ -452,18 +383,6 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     if (missingVars.length > 0) {
       logger.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
       process.exit(1);
-    }
-
-    if (process.env.NODE_ENV === 'production') {
-      if (process.env.COOKIE_SECURE !== 'true') {
-        logger.warn('⚠️  COOKIE_SECURE should be true in production');
-      }
-      if (!process.env.DOMAIN) {
-        logger.warn('⚠️  DOMAIN should be set in production for proper cookie handling');
-      }
-      if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-        logger.warn('⚠️  Twilio credentials not set - SMS functionality will be disabled');
-      }
     }
   }
 
