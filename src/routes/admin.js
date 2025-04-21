@@ -1,14 +1,20 @@
 import express from 'express';
 import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
-import { verifyToken, authorize } from '../middleware/routeProtection.js';
-
-
+import { protect, authorize } from '../middleware/routeProtection.js';
+import adminController from '../controllers/adminController.js';
 
 const router = express.Router();
 
+router.use(protect);
+
+router.get('/dashboard', authorize(['admin']), adminController.getDashboardStats);
+router.get('/players', authorize(['admin']), adminController.getPlayers);
+router.get('/operators', authorize(['admin']), adminController.getOperators);
+router.post('/operators', authorize(['admin']), adminController.createOperator);
+
 // Admin dashboard route
-router.get('/dashboard', verifyToken, authorize(['SUPERADMIN']), async (req, res) => {
+router.get('/dashboard', protect, authorize(['SUPERADMIN']), async (req, res) => {
   try {
     const stats = await userDBService.getAdminStats();
     res.json({ success: true, stats });
@@ -19,7 +25,7 @@ router.get('/dashboard', verifyToken, authorize(['SUPERADMIN']), async (req, res
 });
 
 // Admin user management routes
-router.get('/users', verifyToken, authorize(['SUPERADMIN']), async (req, res) => {
+router.get('/users', protect, authorize(['SUPERADMIN']), async (req, res) => {
   try {
     const users = await userDBService.getAllUsers();
     res.json({ success: true, users });

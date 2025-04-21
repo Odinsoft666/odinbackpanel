@@ -9,10 +9,29 @@ const AdminLogSchema = new mongoose.Schema({
   },
   action: {
     type: String,
-    required: true
+    required: true,
+    enum: [
+      'DASHBOARD_ACCESS',
+      'PLAYERS_LIST_ACCESS',
+      'OPERATORS_LIST_ACCESS',
+      'OPERATOR_CREATED',
+      'OPERATOR_UPDATED',
+      'OPERATOR_DELETED',
+      'OPERATOR_STATUS_CHANGED',
+      'PASSWORD_RESET',
+      'PERMISSIONS_UPDATED'
+    ]
   },
   details: {
     type: Object,
+    required: true
+  },
+  ipAddress: {
+    type: String,
+    required: true
+  },
+  userAgent: {
+    type: String,
     required: true
   },
   timestamp: {
@@ -25,6 +44,18 @@ const AdminLogSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Change from default export to named export
+// Add indexes for better performance
+AdminLogSchema.index({ adminId: 1 });
+AdminLogSchema.index({ action: 1 });
+AdminLogSchema.index({ timestamp: -1 });
+
+// Virtual for admin details
+AdminLogSchema.virtual('admin', {
+  ref: 'User',
+  localField: 'adminId',
+  foreignField: '_id',
+  justOne: true
+});
+
 const AdminLog = mongoose.model('AdminLog', AdminLogSchema);
-export { AdminLog };  // Changed this line
+export { AdminLog };

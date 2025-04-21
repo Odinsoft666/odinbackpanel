@@ -59,7 +59,10 @@ const AdminSchema = new mongoose.Schema({
   },
   firstName: String,
   lastName: String,
-  phone: String,
+  phone: {
+    type: String,
+    match: [/^\+[0-9]{1,3}[0-9]{4,14}$/, 'Invalid phone number format']
+  },
   department: String,
   twoFactorEnabled: { type: Boolean, default: true },
   lastLogin: Date,
@@ -111,7 +114,7 @@ AdminSchema.statics.createOwner = async function() {
         reportAccess: true,
         systemSettings: true
       },
-      twoFactorEnabled: false // Disabled for initial setup
+      twoFactorEnabled: false
     });
     logger.info('🔑 Owner account created successfully');
   }
@@ -140,7 +143,7 @@ AdminSchema.virtual('fullName').get(function() {
   return `${this.firstName || ''} ${this.lastName || ''}`.trim();
 });
 
-// Indexes (only for non-unique fields and compound indexes)
+// Indexes
 AdminSchema.index({ role: 1 });
 AdminSchema.index({ isActive: 1 });
 AdminSchema.index({ lastActivity: -1 });

@@ -1,7 +1,7 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-const { combine, timestamp, printf, colorize, errors } = winston.format;
+const { combine, timestamp, printf, colorize, align } = winston.format;
 
 // Define custom levels including fatal
 const levels = {
@@ -61,10 +61,11 @@ const rejectionHandlers = [
 // Create logger instance
 const logger = winston.createLogger({
   levels,
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: process.env.LOG_LEVEL || 'info',
   format: combine(
-    errors({ stack: true }),
+    colorize(),
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    align(),
     logFormat
   ),
   transports,
@@ -86,5 +87,5 @@ logger.fatal = (message, error = {}) => {
   });
 };
 
-// Named exports
+// Single export at the end
 export { logger };

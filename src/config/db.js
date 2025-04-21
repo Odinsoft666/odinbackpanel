@@ -185,7 +185,7 @@ class Database {
 }
 
 // Named exports
-export const databaseService = {
+export const db = {
   connect: Database.connect.bind(Database),
   getDB: Database.getDB.bind(Database),
   getClient: Database.getClient.bind(Database),
@@ -194,3 +194,5 @@ export const databaseService = {
   getStats: Database.getCollectionStats.bind(Database),
   initialize: Database.initializeCollections.bind(Database)
 };
+
+export const databaseService = db;

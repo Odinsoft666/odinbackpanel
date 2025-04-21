@@ -357,11 +357,15 @@ class AdminPanel {
       contentArea.innerHTML = '<div class="loading-spinner"></div>';
 
       const operators = await this.fetchData('/api/admin/operators');
+      const canEdit = this.currentUser.permissions?.userManagement;
 
       if (type === 'edit') {
         contentArea.innerHTML = `
           <div class="operators-section">
-            <h2>Edit Operators</h2>
+            <div class="section-header">
+              <h2>Manage Operators</h2>
+              ${canEdit ? '<button class="create-btn" data-action="create-operator">+ Create Operator</button>' : ''}
+            </div>
             <div class="table-container">
               <table class="operators-table">
                 <thead>
@@ -370,12 +374,9 @@ class AdminPanel {
                     <th>ADMIN NAME</th>
                     <th>E-MAIL</th>
                     <th>CLASS</th>
+                    <th>STATUS</th>
                     <th>CREATE DATE</th>
-                    <th>COUNTRY</th>
-                    <th>PHONE NUMBER</th>
-                    <th>NAME</th>
-                    <th>SURNAME</th>
-                    <th>ACTIONS</th>
+                    ${canEdit ? '<th>ACTIONS</th>' : ''}
                   </tr>
                 </thead>
                 <tbody>
@@ -385,15 +386,21 @@ class AdminPanel {
                       <td>${operator.adminName}</td>
                       <td>${operator.email}</td>
                       <td>${operator.adminClass}</td>
-                      <td>${new Date(operator.createdAt).toLocaleDateString()}</td>
-                      <td>${operator.country}</td>
-                      <td>${operator.phone}</td>
-                      <td>${operator.name}</td>
-                      <td>${operator.surname}</td>
-                      <td class="actions-cell">
-                        <button class="edit-btn" data-id="${operator._id}">Edit</button>
-                        <button class="delete-btn" data-id="${operator._id}">Delete</button>
+                      <td>
+                        <span class="status-badge ${operator.isActive ? 'active' : 'inactive'}">
+                          ${operator.isActive ? 'Active' : 'Inactive'}
+                        </span>
                       </td>
+                      <td>${new Date(operator.createdAt).toLocaleDateString()}</td>
+                      ${canEdit ? `
+                        <td class="actions-cell">
+                          <button class="edit-btn" data-id="${operator._id}">Edit</button>
+                          ${operator._id !== this.currentUser.id ? 
+                            `<button class="delete-btn" data-id="${operator._id}">Delete</button>` : 
+                            '<button class="delete-btn" disabled>Delete</button>'
+                          }
+                        </td>
+                      ` : ''}
                     </tr>
                   `).join('')}
                 </tbody>
@@ -413,11 +420,8 @@ class AdminPanel {
                     <th>ADMIN NAME</th>
                     <th>E-MAIL</th>
                     <th>CLASS</th>
+                    <th>STATUS</th>
                     <th>CREATE DATE</th>
-                    <th>COUNTRY</th>
-                    <th>PHONE NUMBER</th>
-                    <th>NAME</th>
-                    <th>SURNAME</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,11 +431,12 @@ class AdminPanel {
                       <td>${operator.adminName}</td>
                       <td>${operator.email}</td>
                       <td>${operator.adminClass}</td>
+                      <td>
+                        <span class="status-badge ${operator.isActive ? 'active' : 'inactive'}">
+                          ${operator.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
                       <td>${new Date(operator.createdAt).toLocaleDateString()}</td>
-                      <td>${operator.country}</td>
-                      <td>${operator.phone}</td>
-                      <td>${operator.name}</td>
-                      <td>${operator.surname}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -440,9 +445,54 @@ class AdminPanel {
           </div>
         `;
       }
+
+      this.setupOperatorTableEvents();
     } catch (error) {
       console.error('Error loading operators:', error);
       this.showToast('Failed to load operators', 'error');
+    }
+  }
+
+  setupOperatorTableEvents() {
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('edit-btn')) {
+        this.handleEditOperatorClick(e);
+      } else if (e.target.classList.contains('delete-btn')) {
+        this.handleDeleteOperatorClick(e);
+      } else if (e.target.dataset.action === 'create-operator') {
+        this.loadCreateOperatorsSection();
+      }
+    });
+  }
+
+  async handleEditOperatorClick(e) {
+    const operatorId = e.target.dataset.id;
+    if (operatorId) {
+      await this.loadEditOperatorForm(operatorId);
+    }
+  }
+
+  async handleDeleteOperatorClick(e) {
+    const operatorId = e.target.dataset.id;
+    if (operatorId && confirm('Are you sure you want to delete this operator?')) {
+      try {
+        const response = await fetch(`/api/admin/operators/${operatorId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${this.currentUser.token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete operator');
+        }
+
+        this.showToast('Operator deleted successfully', 'success');
+        this.loadOperatorsSection('edit');
+      } catch (error) {
+        console.error('Delete operator error:', error);
+        this.showToast(error.message || 'Failed to delete operator', 'error');
+      }
     }
   }
 
@@ -927,4 +977,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     window.location.href = '/';
   }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  new AdminPanel();
 });

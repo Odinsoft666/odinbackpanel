@@ -10,9 +10,31 @@ import {
   getPlayerWithdrawals,
   getAllPlayers
 } from '../controllers/userController.js';
-import { protect, admin } from '../middleware/routeProtection.js';
+import { protect, authorize } from '../middleware/routeProtection.js';
+import { 
+  getPlayerProfile, 
+  updatePlayerBalances,
+  getBalanceHistory,
+  getPlayerDevices,
+  getPlayerBets,
+  getPlayerInvestments,
+  getPlayerWithdrawals,
+  getAllPlayers
+} from '../controllers/userController.js';
 
 const router = express.Router();
+
+
+router.use(protect);
+
+router.get('/', authorize(['admin']), getAllPlayers);
+router.get('/:id', authorize(['admin']), getPlayerProfile);
+router.put('/balances/:id', authorize(['admin']), updatePlayerBalances);
+router.get('/balance-history/:id', authorize(['admin']), getBalanceHistory);
+router.get('/devices/:id', authorize(['admin']), getPlayerDevices);
+router.get('/bets/:id', authorize(['admin']), getPlayerBets);
+router.get('/investments/:id', authorize(['admin']), getPlayerInvestments);
+router.get('/withdrawals/:id', authorize(['admin']), getPlayerWithdrawals);
 
 // Admin access required for all routes
 router.use(protect);
