@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { userDBService } from '../services/database.js';
+import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
 import { ADMIN_ROLES } from '../config/constants.js';
 
@@ -58,5 +58,3 @@ export const authorize = (roles = []) => {
     }
   };
 };
-
-export const authenticate = verifyToken();

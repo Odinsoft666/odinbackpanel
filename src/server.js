@@ -175,10 +175,11 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       const { default: contentRoutes } = await import('./routes/content.js');
       const { default: smsRoutes } = await import('./routes/sms.js');
       const { default: emailRoutes } = await import('./routes/email.js');
-      const { default: reportRoutes } = await import('./routes/reports.js');
-      const { default: paymentRoutes } = await import('./routes/payments.js');
+
       
-      const { verifyToken } = await import('./middleware/authMiddleware.js');
+      const authMiddleware = await import('./middleware/authMiddleware.js');
+      const verifyToken = authMiddleware.verifyToken;
+      const authorize = authMiddleware.authorize;
       const { errorHandler } = await import('./middleware/errorHandler.js');
       const { isAdmin } = await import('./middleware/roleMiddleware.js');
 
@@ -187,7 +188,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       app.use('/api/maintenance', maintenanceRoutes);
       app.use('/api/notifications', notificationRoutes);
       app.use('/api/auth', authRoutes);
-      app.use('/api/admin', verifyToken, isAdmin, adminRoutes);
+      app.use('/api/admin', verifyToken, authorize(['SUPERADMIN']), adminRoutes);
       app.use('/api/users', verifyToken, userRoutes);
       app.use('/api/games', verifyToken, gameRoutes);
       app.use('/api/affiliates', verifyToken, affiliateRoutes);

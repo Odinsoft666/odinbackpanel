@@ -1,15 +1,16 @@
 import express from 'express';
-import UserDatabaseService from '../database.js';
+import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
-import { isAdmin } from '../middleware/roleMiddleware.js';
+import { verifyToken, authorize } from '../middleware/authMiddleware.js';
+
+
 
 const router = express.Router();
 
 // Admin dashboard route
-router.get('/dashboard', verifyToken, isAdmin, async (req, res) => {
+router.get('/dashboard', verifyToken, authorize(['SUPERADMIN']), async (req, res) => {
   try {
-    const stats = await UserDatabaseService.getAdminStats();
+    const stats = await userDBService.getAdminStats();
     res.json({ success: true, stats });
   } catch (error) {
     logger.error('Admin dashboard error:', error);
@@ -18,16 +19,14 @@ router.get('/dashboard', verifyToken, isAdmin, async (req, res) => {
 });
 
 // Admin user management routes
-router.get('/users', verifyToken, isAdmin, async (req, res) => {
+router.get('/users', verifyToken, authorize(['SUPERADMIN']), async (req, res) => {
   try {
-    const users = await UserDatabaseService.getAllUsers();
+    const users = await userDBService.getAllUsers();
     res.json({ success: true, users });
   } catch (error) {
     logger.error('Admin get users error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
-
-// Add more admin routes as needed...
 
 export default router;
