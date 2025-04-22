@@ -161,37 +161,42 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
 async function initializeRoutes() {
   try {
     // Dynamic imports for better startup performance
-    const { default: statusRoutes } = await import('./routes/statusRoutes.js');
-    const { default: maintenanceRoutes } = await import('./routes/maintenanceRoutes.js');
-    const { default: notificationRoutes } = await import('./routes/notificationRoutes.js');
-    const { default: authRoutes } = await import('./routes/auth.js');
-    const { default: adminRoutes } = await import('./routes/admin.js');
-    const { default: userRoutes } = await import('./routes/users.js');
-    const { default: gameRoutes } = await import('./routes/games.js');
-    const { default: affiliateRoutes } = await import('./routes/affiliates.js');
-    const { default: bonusRoutes } = await import('./routes/bonuses.js');
-    const { default: contentRoutes } = await import('./routes/content.js');
-    const { default: smsRoutes } = await import('./routes/sms.js');
-    const { default: emailRoutes } = await import('./routes/email.js');
+    const statusRoutes = (await import('./routes/statusRoutes.js')).default;
+    const maintenanceRoutes = (await import('./routes/maintenanceRoutes.js')).default;
+    const notificationRoutes = (await import('./routes/notificationRoutes.js')).default;
+    const authRoutes = (await import('./routes/auth.js')).default;
+    const adminRoutes = (await import('./routes/admin.js')).default;
+    const userRoutes = (await import('./routes/users.js')).default;
+    const gameRoutes = (await import('./routes/games.js')).default;
+    const affiliateRoutes = (await import('./routes/affiliates.js')).default;
+    const bonusRoutes = (await import('./routes/bonuses.js')).default;
+    const contentRoutes = (await import('./routes/content.js')).default;
+    const smsRoutes = (await import('./routes/sms.js')).default;
 
     // ✅ Correct middleware imports - only import once
-    const { protect, authorize, admin } = await import('./middleware/routeProtection.js');
-    const { errorHandler } = await import('./middleware/errorHandler.js');
-    const { isAdmin } = await import('./middleware/roleMiddleware.js');
+    const routeProtection = await import('./middleware/routeProtection.js');
+    const errorHandler = (await import('./middleware/errorHandler.js')).default;
+    const roleMiddleware = await import('./middleware/roleMiddleware.js');
+
+    app.use('/api/admin', 
+      routeProtection.protect, 
+      roleMiddleware.admin, 
+      adminRoutes
+    );
 
     // API Routes with updated middleware
     app.use('/api/status', statusRoutes);
     app.use('/api/maintenance', maintenanceRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/auth', authRoutes);
-    app.use('/api/admin', protect, admin, adminRoutes);  // Using the admin middleware
-    app.use('/api/users', protect, userRoutes);
-    app.use('/api/games', protect, gameRoutes);
-    app.use('/api/affiliates', protect, affiliateRoutes);
-    app.use('/api/bonuses', protect, bonusRoutes);
-    app.use('/api/content', protect, contentRoutes);
-    app.use('/api/sms', protect, smsRoutes);
-    app.use('/api/email', protect, emailRoutes);
+   
+    app.use('/api/users', routeProtection.protect, userRoutes);
+    app.use('/api/games', routeProtection.protect, gameRoutes);
+    app.use('/api/affiliates', routeProtection.protect, affiliateRoutes);
+    app.use('/api/bonuses', routeProtection.protect, bonusRoutes);
+    app.use('/api/content', routeProtection.protect, contentRoutes);
+    app.use('/api/sms', routeProtection.protect, smsRoutes);
+
 
 
       // Static Files

@@ -11,34 +11,12 @@ import {
   getAllPlayers
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middleware/routeProtection.js';
-import { 
-  getPlayerProfile, 
-  updatePlayerBalances,
-  getBalanceHistory,
-  getPlayerDevices,
-  getPlayerBets,
-  getPlayerInvestments,
-  getPlayerWithdrawals,
-  getAllPlayers
-} from '../controllers/userController.js';
 
 const router = express.Router();
 
-
-router.use(protect);
-
-router.get('/', authorize(['admin']), getAllPlayers);
-router.get('/:id', authorize(['admin']), getPlayerProfile);
-router.put('/balances/:id', authorize(['admin']), updatePlayerBalances);
-router.get('/balance-history/:id', authorize(['admin']), getBalanceHistory);
-router.get('/devices/:id', authorize(['admin']), getPlayerDevices);
-router.get('/bets/:id', authorize(['admin']), getPlayerBets);
-router.get('/investments/:id', authorize(['admin']), getPlayerInvestments);
-router.get('/withdrawals/:id', authorize(['admin']), getPlayerWithdrawals);
-
 // Admin access required for all routes
 router.use(protect);
-router.use(admin);
+router.use(authorize(['admin']));
 
 // Get all players (basic info)
 router.get('/', getAllPlayers);
@@ -48,14 +26,13 @@ router.route('/:id')
   .get(getPlayerProfile);
 
 // Balance operations
-router.route('/:id/balances')
-  .put(updatePlayerBalances);
+router.put('/balances/:id', updatePlayerBalances);
 
 // History and activity
-router.get('/:id/balance-history', getBalanceHistory);
-router.get('/:id/devices', getPlayerDevices);
-router.get('/:id/bets', getPlayerBets);
-router.get('/:id/investments', getPlayerInvestments);
-router.get('/:id/withdrawals', getPlayerWithdrawals);
+router.get('/balance-history/:id', getBalanceHistory);
+router.get('/devices/:id', getPlayerDevices);
+router.get('/bets/:id', getPlayerBets);
+router.get('/investments/:id', getPlayerInvestments);
+router.get('/withdrawals/:id', getPlayerWithdrawals);
 
 export default router;
