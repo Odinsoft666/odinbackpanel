@@ -60,7 +60,8 @@ const bonusSchema = new mongoose.Schema({
     type: String,
     uppercase: true,
     trim: true,
-    sparse: true  // Removed unique:true from here
+    sparse: true,
+    unique: true  // Moved unique index here from schema.index()
   }
 }, {
   timestamps: true,
@@ -68,13 +69,9 @@ const bonusSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Single index definition for code (removed from schema field)
-bonusSchema.index({ code: 1 }, { unique: true, sparse: true });
-
-// Index for active bonuses
+// Removed duplicate index definition for code
 bonusSchema.index({ isActive: 1, validUntil: 1 });
 
-// Pre-save hook to generate code if not provided
 bonusSchema.pre('save', function(next) {
   if (!this.code && this.bonusType === 'promotional') {
     this.code = `PROMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -82,6 +79,20 @@ bonusSchema.pre('save', function(next) {
   next();
 });
 
-const Bonus = mongoose.model('Bonus', bonusSchema);
+// Add text index for search functionality if needed
+bonusSchema.index({ name: 'text', description: 'text' });
 
-export { Bonus };
+// Add virtual for remaining validity days
+bonusSchema.virtual('daysRemaining').get(function() {
+  return Math.ceil((this.validUntil - Date.now()) / (1000 * 60 * 60 * 24));
+});
+
+// Add query helper for active bonuses
+bonusSchema.query.active = function() {
+  return this.where({ 
+    isActive: true,
+    validUntil: { $gt: new Date() }
+  });
+};
+
+export const Bonus = mongoose.model('Bonus', bonusSchema);
