@@ -1,7 +1,8 @@
 import express from 'express';
-import { protect, authorize } from '../middleware/auth.js';
-import Admin from '../models/Admin.js';
+import { protect, authorize } from '../middleware/routeProtection.js';
+import { Admin }from '../models/Admin.js';
 import adminController from '../controllers/adminController.js';
+import { userDBService } from '../database.js';
 import { logger } from '../utils/logger.js';
 
 const router = express.Router();
@@ -143,5 +144,16 @@ router.get('/me',
     }
   }
 );
+
+// Additional routes from admin.js
+router.get('/users', authorize(['SUPERADMIN']), async (req, res) => {
+  try {
+    const users = await userDBService.getAllUsers();
+    res.json({ success: true, users });
+  } catch (error) {
+    logger.error('Admin get users error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
 
 export default router;

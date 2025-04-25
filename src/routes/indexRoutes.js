@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import authRoutes from './auth.js';
-import adminRoutes from './admin.js';
+import authRoutes from '.auth.js';
+import adminRoutes from '.admin.js';
 import { authLimiter, sensitiveLimiter } from '../services/auth.js';
 
 const router = Router();

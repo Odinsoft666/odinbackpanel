@@ -7,11 +7,6 @@ import { logger } from '../utils/logger.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-console.log('Current file path:', __filename);
-console.log('Resolved User.js path:', path.resolve(path.dirname(__filename), '../../models/User.js'));
-
-
 class StatusMonitor extends EventEmitter {
   constructor() {
     super();

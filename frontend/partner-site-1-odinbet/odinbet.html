@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UppBET - Premium Online Casino</title>
+    <meta name="description" content="Play exciting casino games and win big at UppBET">
+    
+    <style>
+        :root {
+            --primary-bg: #16110d;
+            --gold-gradient: linear-gradient(to bottom, #fef325 0%, #feec22 25%, #f8b10f 50%, #f79e09 65%, #feec22 75%, #fde420 85%, #fef325 100%);
+            --gold-color: #f8b10f;
+            --text-color: #fff;
+            --border-radius: 5px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body, html {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-color);
+            background-color: var(--primary-bg);
+            font-size: 16px;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            line-height: 1.6;
+        }
+
+        .goldfont {
+            position: relative;
+            z-index: 3;
+            background: var(--gold-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            font-size: 28px;
+            padding-top: 24px;
+        }
+
+        .button {
+            border-radius: var(--border-radius);
+            position: relative;
+            font-size: 15px;
+            font-family: Tahoma, sans-serif;
+            letter-spacing: 0.01px;
+            font-weight: bold;
+            line-height: 24px;
+            color: #291b07;
+            text-align: center;
+            text-transform: uppercase;
+            border: 1px solid #745812;
+            cursor: pointer;
+            padding: 8px 16px;
+            margin: 0 auto;
+            transition: all 0.3s ease-in-out;
+            background: radial-gradient(50.43% 23.75% at 50.43% 0, #fff 0, hsla(0, 0%, 100%, 0) 100%), 
+                        radial-gradient(65% 65% at 50.43% 0, #fff4d9 0, rgba(255, 225, 150, 0) 100%), 
+                        linear-gradient(180deg, #cca952, #b1955f 99.48%);
+            box-shadow: var(--box-shadow), inset 0 -4px 8px rgba(92, 70, 24, 0.6);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .cover {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.86);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            position: relative;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 10px;
+            background: linear-gradient(0deg, #000, #272727);
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal:before, .modal:after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: -4px;
+            background: linear-gradient(45deg, #FFD700, #bb8c1d, #D4AF37, #bb8c1d, #614e11, #bb8c1d, #FFD700, #614e11, #FFD700, #614e11);
+            background-size: 250%;
+            width: calc(100% + 8px);
+            height: calc(100% + 8px);
+            z-index: -1;
+            animation: steam 30s linear infinite;
+            border-radius: 10px;
+        }
+
+        .modal:after {
+            filter: blur(28px);
+        }
+
+        @keyframes steam {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .goldfont {
+                font-size: 22px;
+            }
+            
+            .modal {
+                width: 95%;
+                padding: 15px;
+            }
+        }
+
+        /* Modern input styling */
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #998143;
+            border-radius: var(--border-radius);
+            background-color: rgba(51, 51, 51, 0.8);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--gold-color);
+            box-shadow: 0 0 0 2px rgba(248, 177, 15, 0.3);
+        }
+
+        input::placeholder {
+            color: #aaa;
+            padding-left: 10px;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: -15px;
+            top: -15px;
+            width: 34px;
+            height: 34px;
+            background-color: #010101;
+            border-radius: 50%;
+            color: #fff;
+            text-align: center;
+            line-height: 34px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid var(--gold-color);
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: var(--gold-color);
+            color: #000;
+        }
+
+        /* Header styles */
+        .header {
+            height: 70px;
+            background-color: rgba(0, 0, 0, 0.35);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            width: 110px;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
+        }
+
+        .control-icon {
+            width: 28px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .control-icon:hover {
+            opacity: 0.8;
+        }
+
+        /* Navigation */
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 15px 0;
+            background: radial-gradient(27.78% 21.05% at 50% 94.74%,rgba(255,244,217,.03) 3.11%,rgba(255,244,217,0) 100%),
+                      radial-gradient(37.56% 50% at 50% 0,rgba(255,244,217,.16) 0,rgba(255,244,217,0) 100%),
+                      linear-gradient(90deg,rgba(184,153,72,0) 8.42%,rgba(184,153,72,.2) 50.18%,rgba(184,153,72,0) 88.6%);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            color: #e0c785;
+            font-weight: 800;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .nav-item:hover {
+            opacity: 0.7;
+        }
+
+        .nav-icon {
+            height: 20px;
+        }
+
+        /* Game sections */
+        .section-title {
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .live-casino {
+            position: relative;
+            margin-top: 100px;
+            text-align: center;
+        }
+
+        .live-casino-bg {
+            max-width: 1000px;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .game-carousel {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1000px;
+            max-width: 100%;
+            height: 440px;
+        }
+
+        .game-slide {
+            text-align: center;
+            position: relative;
+        }
+
+        .play-button {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: #000;
+            border: 1px solid #000;
+            border-radius: 40px;
+            box-shadow: 0 0 13px #000;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .game-image {
+            width: 170px;
+            margin: 0 auto;
+        }
+
+        /* Winners section */
+        .winners-section {
+            margin-top: 50px;
+            position: relative;
+            text-align: center;
+        }
+
+        .jackpot-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        .jackpot-amount {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .jackpot-bg {
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .footer {
+            max-width: 1300px;
+            margin: 50px auto 0;
+            padding-bottom: 50px;
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 28px;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-sponsors {
+            margin: 20px 0;
+            border-bottom: 1px solid gray;
+            padding-bottom: 20px;
+            opacity: 0.4;
+        }
+
+        .sponsor-logo {
+            height: 40px;
+            margin: 0 10px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .sponsor-logo:hover {
+            opacity: 1;
+        }
+
+        .footer-text {
+            margin-top: 20px;
+        }
+    </style>
+    
+    <!-- Modern font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+</head>
+
+<body style="background-image:url(/images/backgrounds/main-bg.jpg); background-position:0px 200px; background-repeat: no-repeat; background-size: cover;">
+
+<!-- Header Section -->
+<div class="header">
+    <div class="header-content">
+        <!-- Logo -->
+        <img src="/images/logos/uppbet-logo.png" alt="UppBET Logo" class="logo">
+
+        <!-- User Controls -->
+        <div class="user-controls">
+            <img src="/images/icons/settings.png" alt="Settings" class="control-icon" style="opacity: 0.5;">
+            
+            <div class="button" style="border-radius:18px; background-color:#4d3a09; box-shadow:0px 0px 14px #cbb57b; text-transform:capitalize;">
+                Casustexasli
+            </div>
+            
+            <div class="balance-display">
+                <img src="/images/icons/coin.png" alt="Balance" style="width:42px;">
+                <span>$50</span>
+            </div>
+            
+            <img onclick="withdrawac()" src="/images/icons/withdraw.png" alt="Withdraw" class="control-icon" title="Withdraw">
+            <img onclick="depositac()" src="/images/icons/deposit.png" alt="Deposit" class="control-icon" title="Deposit">
+            <img onclick="hediyeac()" src="/images/icons/gift.png" alt="Gift" class="control-icon">
+        </div>
+    </div>
+</div>
+
+<!-- Slider Section -->
+<div class="slideshow-container" style="margin-top:70px;">
+    <div class="mySlides fade">
+        <img src="/images/banners/promo-1.jpg" style="width:100%" alt="Promotion 1">
+    </div>
+    <div class="mySlides fade">
+        <img src="/images/banners/promo-2.jpg" style="width:100%" alt="Promotion 2">
+    </div>
+    <div class="mySlides fade">
+        <img src="/images/banners/promo-3.jpg" style="width:100%" alt="Promotion 3">
+    </div>
+</div>
+
+<!-- Menu Navigation -->
+<div class="nav-menu">
+    <div class="nav-item">
+        <img src="/images/icons/slots.png" alt="Slots" class="nav-icon">
+        <span>SLOTS</span>
+    </div>
+    
+    <div class="nav-item">
+        <img src="/images/icons/live-casino.png" alt="Live Casino" class="nav-icon">
+        <a href="#casinolive" style="text-decoration:none; color:inherit;">LIVE CASINO</a>
+    </div>
+    
+    <div class="nav-item">
+        <img src="/images/icons/instant-games.png" alt="Instant Games" class="nav-icon">
+        <span>INSTANT GAMES</span>
+    </div>
+    
+    <div class="nav-item">
+        <img src="/images/icons/bonus.png" alt="Bonuses" class="nav-icon">
+        <span>BONUS</span>
+    </div>
+    
+    <div class="nav-item">
+        <img src="/images/icons/hot-wheel.png" alt="Hot Wheel" class="nav-icon">
+        <span>HOT WHEEL</span>
+    </div>
+    
+    <div class="nav-item">
+        <img src="/images/icons/case-open.png" alt="Case Open" class="nav-icon">
+        <span>CASE OPEN</span>
+    </div>
+</div>
+
+<!-- Games Section -->
+<div class="section-title">
+    <img src="/images/banners/top-rated.png" alt="Top Rated Games" style="width:100%">
+</div>
+
+<!-- Live Casino Section -->
+<div id="casinolive" class="live-casino">
+    <img src="/images/banners/live-casino-banner.png" alt="Live Casino" class="live-casino-bg">
+    
+    <div class="game-carousel">
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide game-slide">
+                    <img src="/images/icons/play.png" alt="Play" class="play-button">
+                    <img src="/images/games/game-5.png" alt="Game 1" class="game-image">
+                </div>
+                <div class="swiper-slide game-slide">
+                    <img src="/images/icons/play.png" alt="Play" class="play-button">
+                    <img src="/images/games/game-2.png" alt="Game 2" class="game-image">
+                </div>
+                <div class="swiper-slide game-slide">
+                    <img src="/images/icons/play.png" alt="Play" class="play-button">
+                    <img src="/images/games/game-3.png" alt="Game 3" class="game-image">
+                </div>
+                <div class="swiper-slide game-slide">
+                    <img src="/images/icons/play.png" alt="Play" class="play-button">
+                    <img src="/images/games/game-1.png" alt="Game 4" class="game-image">
+                </div>
+                <div class="swiper-slide game-slide">
+                    <img src="/images/icons/play.png" alt="Play" class="play-button">
+                    <img src="/images/games/game-4.png" alt="Game 5" class="game-image">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Winners and Jackpot Section -->
+<div class="winners-section">
+    <div style="position:absolute; left:10%; top:0; text-align:left; width:300px; z-index:5;">
+        <div class="goldfont" style="font-size:20px;">Top Winners</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:19px;">1) $22,625 - Mrya***</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:14px;">2) $18,734 - Lurva***</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:14px;">3) $15,103 - Muham***</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:14px;">4) $10,339 - Jen***</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:14px;">5) $7,447 - Abdulla***</div>
+        <div style="font-weight:bold; font-size:18px; margin-top:14px;">6) $6,232 - Pua***</div>
+    </div>
+
+    <div style="position:absolute; right:10%; top:0; width:300px; z-index:5;">
+        <div class="goldfont" style="font-size:20px;">Top Games</div>
+        <div style="padding-top:19px;"><img src="/images/games/thumb-2.gif" style="width:100px; border-radius:8px;" alt="Top Game 1"></div>
+        <div style="padding-top:9px;"><img src="/images/games/thumb-1.gif" style="width:100px; border-radius:8px;" alt="Top Game 2"></div>
+        <div style="padding-top:9px;"><img src="/images/games/thumb-3.jpg" style="width:100px; border-radius:8px;" alt="Top Game 3"></div>
+    </div>
+
+    <div class="jackpot-display">
+        <div class="goldfont jackpot-amount">$1,524,376</div>
+    </div>
+    <img src="/images/banners/jackpot-bg.png" alt="Jackpot" class="jackpot-bg">
+</div>
+
+<!-- Footer Section -->
+<div class="footer">
+    <div class="footer-links">
+        About Us &middot; 
+        Terms and Conditions &middot; 
+        KYC Policy, Privacy and Managing Personal Data &middot; 
+        Player Protection &middot; 
+        Self Distancing &middot; 
+        Dispute Resolutions &middot; 
+        Anti-Money Laundering Policy &middot; 
+        Integrity and RNG Test Management &middot; 
+        Accounts, Payments and Bonuses &middot; 
+        General rules &middot; 
+        Terms And Conditions &middot; 
+        Betting Rules &middot; 
+        Casino Rules &middot; 
+        Responsible Acting
+    </div>
+    
+    <div style="padding-bottom:10px; padding-top:19px;">
+        <img src="/images/validations/certificates.png" alt="Validations" height="100">
+    </div>
+    
+    <img src="/images/logos/sponsors.png" alt="Sponsors">
+    
+    <div class="footer-sponsors">
+        <img src="/images/providers/provider-1.png" class="sponsor-logo" alt="Provider 1">
+        <img src="/images/providers/provider-2.png" class="sponsor-logo" alt="Provider 2">
+        <img src="/images/providers/provider-3.png" class="sponsor-logo" alt="Provider 3">
+        <img src="/images/providers/provider-4.png" class="sponsor-logo" alt="Provider 4">
+        <img src="/images/providers/provider-5.png" class="sponsor-logo" alt="Provider 5">
+        <img src="/images/providers/provider-6.png" class="sponsor-logo" alt="Provider 6">
+        <img src="/images/providers/provider-7.png" class="sponsor-logo" alt="Provider 7">
+        <img src="/images/providers/provider-8.png" class="sponsor-logo" alt="Provider 8">
+        <img src="/images/providers/provider-9.png" class="sponsor-logo" alt="Provider 9">
+        <img src="/images/providers/provider-10.png" class="sponsor-logo" alt="Provider 10">
+    </div>
+    
+    <div class="footer-text">
+        This Service operates under the License No. 2819/JAZ issued to Curacao Egaming, Authorized and Regulated by the Government of Curacao. Company Name: UppBET LLC. Address: Dr. M.J. Hugenholtzweg Z/N UTS Gebouw Curaçao.
+        <br>
+        Copyright © 2023 <b>UppBET</b>. All Rights Reserved.
+    </div>
+</div>
+
+<!-- Modal Windows -->
+<div class="cover" id="cover4" style="display:none">
+    <div class="modal">
+        <div class="close-btn" onclick="kapa4()">X</div>
+        <img src="/images/icons/coin.png" style="position:absolute; margin-top:-70px; width:140px; left:50%; margin-left:-70px;" alt="Deposit">
+        
+        <div style="padding-top:43px;">
+            <div class="goldfont">DEPOSIT</div>
+            
+            <div id="deposit1">
+                <div style="color:#ddc37f; line-height:26px; margin:8px 18px;">
+                    Please select type of your deposit.
+                </div>
+                
+                <table style="margin:20px auto; width:90%;">
+                    <tr>
+                        <td><input type="radio" id="wire" name="paymenttype" value="wire" checked></td>
+                        <td style="padding-right:10px;"><img src="/images/payment/maldives.png" width="30" style="border-radius:5px;" alt="Wire Transfer"></td>
+                        <td align="left">Wire (Bank of Maldives)</td>
+                    </tr>
+                    <tr>
+                        <td><input type="radio" id="cc" name="paymenttype" value="cc"></td>
+                        <td style="padding-right:10px;"><img src="/images/payment/credit-card.png" width="40" alt="Credit Card"></td>
+                        <td align="left">Credit card</td>
+                    </tr>
+                    <tr>
+                        <td><input type="radio" id="gpay" name="paymenttype" value="gpay"></td>
+                        <td style="padding-right:10px;"><img src="/images/payment/gpay.png" width="50" alt="Google Pay"></td>
+                        <td align="left">Google Pay</td>
+                    </tr>
+                    <tr>
+                        <td><input type="radio" id="applepay" name="paymenttype" value="applepay"></td>
+                        <td style="padding-right:10px;"><img src="/images/payment/apple-pay.png" width="50" alt="Apple Pay"></td>
+                        <td align="left">Apple Pay</td>
+                    </tr>
+                </table>
+                
+                <center><div class="button" onclick="depositilk()" style="width:140px; margin-top:30px;">Proceed</div></center>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+<script>
+    // Slider functionality
+    let slideIndex = 0;
+    showSlides();
+
+    function showSlides() {
+        let slides = document.getElementsByClassName("mySlides");
+        for (let i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+        }
+        slideIndex++;
+        if (slideIndex > slides.length) {slideIndex = 1}
+        slides[slideIndex-1].style.display = "block";
+        setTimeout(showSlides, 5000);
+    }
+
+    // Initialize Swiper
+    var swiper = new Swiper(".mySwiper", {
+        slidesPerView: 3,
+        spaceBetween: 30,
+        autoplay: {
+            delay: 2500,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+    });
+
+    // Modal functions
+    function depositac() {
+        document.getElementById("cover4").style.display = "flex";
+    }
+
+    function kapa4() {
+        document.getElementById("cover4").style.display = "none";
+    }
+
+    function depositilk() {
+        document.getElementById("deposit1").style.display = "none";
+        // Show next step...
+    }
+
+    function withdrawac() {
+        // Withdraw functionality
+        console.log("Withdraw clicked");
+    }
+
+    function hediyeac() {
+        // Gift functionality
+        console.log("Gift clicked");
+    }
+</script>
+
+</body>
+</html>
